@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
   String _result = '';
-  final labels=["Metal", "Paper", "Plastic"];
+  final labels=['leaf_waste', 'metal', 'paper', 'plastic', 'wood_waste'];
   var progress=0.0;
   Interpreter? _interpreter;
   bool _modelLoaded = false;
@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _loadModel() async {
     try {
-      _interpreter = await Interpreter.fromAsset("assets/model.tflite");
+      _interpreter = await Interpreter.fromAsset("assets/new_model.tflite");
 
       setState(() {
         _modelLoaded = true;
@@ -87,11 +87,11 @@ class _HomePageState extends State<HomePage> {
         var inputImage = await preprocessImage(image);
 
         // Run inference
-        var outputs = List.filled(1*3,0).reshape([1,3]);
+        var outputs = List.filled(1*5,0).reshape([1,5]);
         _interpreter!.run(inputImage, outputs);
         List<num> results=outputs[0].cast<num>();
         int maxIndex=0;
-        for (int i=1; i<3; i++) {
+        for (int i=1; i<5; i++) {
           if (results[i]>results[maxIndex]) {
             maxIndex=i;
           }
@@ -120,14 +120,14 @@ class _HomePageState extends State<HomePage> {
       var image = img.decodeImage(imageData);
 
       // Resize the image to the desired dimensions (256x256 in this case)
-      var resizedImage = img.copyResize(image!, width: 256, height: 256);
+      var resizedImage = img.copyResize(image!, width: 224, height: 224);
 
       // Normalize the pixel values to [0, 1] and store in a 4D array
       final buffer = List.generate(1, (_) =>
-                    List.generate(256, (_)=>
-                     List.generate(256, (_)=> Float32List(3))));
-      for (var i = 0; i < 256; i++) {
-        for (var j = 0; j < 256; j++) {
+                    List.generate(224, (_)=>
+                     List.generate(224, (_)=> Float32List(3))));
+      for (var i = 0; i < 224; i++) {
+        for (var j = 0; j < 224; j++) {
           var pixel = resizedImage.getPixel(i, j);
           buffer[0][i][j][0] = pixel.r / 255.0;
           buffer[0][i][j][1] = pixel.g / 255.0;
